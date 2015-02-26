@@ -1,12 +1,14 @@
 from ctypes import *
+import ctypes.util
 from platform import platform
+clib = cdll.LoadLibrary(ctypes.util.find_library("c"))
 from _libpcap import (
     load_libpcap,
     PcapPkthd,
     TimeVal,
     PCAP,
     PcapStat,
-    PCAPIf
+    PcapIf
 )
 
 pf = platform()
@@ -37,13 +39,13 @@ def setup_pcap():
     libpcap.pcap_strerror.argtypes = [c_int]
     libpcap.pcap_strerror.restype  = c_char
 
-    libpcap.pcap_next.argtypes = [c_int, POINTER(PcapPkthd)]
+    libpcap.pcap_next.argtypes = [POINTER(PCAP), POINTER(PcapPkthd)]
     libpcap.pcap_next.restype  = c_char
 
-    libpcap.pcap_findalldevs.argtypes = [POINTER(POINTER(PCAPIf)), c_char_p]
+    libpcap.pcap_findalldevs.argtypes = [POINTER(POINTER(PcapIf)), c_char_p]
     libpcap.pcap_findalldevs.restype  = c_int
 
-    libpcap.pcap_freealldevs.argtypes = [POINTER(PCAPIf), c_char_p]
+    libpcap.pcap_freealldevs.argtypes = [POINTER(PcapIf), c_char_p]
     libpcap.pcap_freealldevs.restype  = None
 
     # XXX:
@@ -123,7 +125,7 @@ def setup_pcap():
     libpcap.pcap_set_tstamp_type.restype  = c_int
 
     libpcap.pcap_list_tstamp_types.argtypes = [POINTER(PCAP), POINTER(POINTER(c_int))]
-    libpcap.pcap_list_tstamp_types.argtypes = c_int
+    libpcap.pcap_list_tstamp_types.restype  = c_int
 
     libpcap.pcap_free_tstamp_types.argtypes = [POINTER(PCAP), POINTER(POINTER(c_int))]
     libpcap.pcap_free_tstamp_types.restype  = None
@@ -155,8 +157,10 @@ def setup_pcap():
     libpcap.pcap_statustostr.argtypes = [c_int]
     libpcap.pcap_statustostr.restype  = c_char_p
 
-    return libpcap
+    libpcap.pcap_dispatch.argtypes = [POINTER(PCAP), c_int, c_void_p ,c_char_p]
+    libpcap.pcap_dispatch.restype  = c_int
 
+    return libpcap
 
 
 def create_pcap():
@@ -169,7 +173,7 @@ class Pcap(object):
 
     @property
     def device(self):
-        ebuff = c_char_p('x' * 255)
+        ebuff = c_char_p('')
         dev   = self.libpcap.pcap_lookupdev(ebuff)
         if not dev:
             raise PcapExecption(ebuff)
@@ -179,7 +183,7 @@ class Pcap(object):
         dev_p  = c_char_p(dev)
         net_p  = c_uint(net)
         mask_p = c_uint(mask)
-        ebuff  = c_char_p('x' * 255)
+        ebuff  = c_char_p('')
         res    = self.libpcap.pcap_lookupnet(
             dev_p,
             net_p,
@@ -190,12 +194,12 @@ class Pcap(object):
             raise PcapExecption(ebuff.value)
         return res
 
-    def open(self, snaplen, promisc, to_ms):
-        dev_p  = c_char_p(self.device)
+    def open(self, dev, snaplen, promisc, to_ms):
+        dev_p  = c_char_p(dev)
         sn_p   = c_int(snaplen)
         prom_p = c_int(int(bool(promisc)))
         toms_p = c_int(to_ms)
-        ebuff  = c_char_p('x' * 255)
+        ebuff  = c_char_p('')
         h      = self.libpcap.pcap_open_live(
             dev_p,
             sn_p,
@@ -209,11 +213,14 @@ class Pcap(object):
 
     def create(self, dev):
         dev_p = c_char_p(dev)
-        ebuff = c_char_p('x' * 255)
+        ebuff = c_char_p('')
         pcap  = self.libpcap.pcap_create(
             dev_p,
             ebuff
         )
+        if ebuff.value:
+            print ebuff.value
+            raise PcapExecption(ebuff.value)
         return pcap
 
     def close(self, pcap):
@@ -223,21 +230,33 @@ class Pcap(object):
         res = self.libpcap.pcap_activate(pcap)
         return res
 
-    def next_packet(self):
+    def next_packet(self, pcap):
         header = PcapPkthd()
         pkt    = self.libpcap.pcap_next(
-            self.handle,
+            pcap,
             header
         )
         return pkt
 
+    @property
     def version(self):
         return self.libpcap.pcap_lib_version(None)
 
     def breakloop(self, pcap):
         self.libpcap.pcap_breakloop(pcap)
 
-    #def loop(self, pcap, count, user):
-    #    c_count = c_int(count)
-    #    c_user  = c_char(user)
-    #    self.libpcap.pcap_loop(pcap)
+    def loop(self, pcap, count, cb, user):
+        c_count = c_int(count)
+        c_user  = c_char_p(user)
+        ret = self.libpcap.pcap_loop(pcap, c_count, cb, c_user)
+        return ret
+
+    @property
+    def devices(self):
+        devs  = POINTER(PcapIf)()
+        ebuff = c_char_p('')
+        self.libpcap.pcap_findalldevs(
+            byref(devs),
+            ebuff
+        )
+        return devs

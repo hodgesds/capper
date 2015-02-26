@@ -1,4 +1,5 @@
 from   ctypes import *
+import abc
 import platform
 import os
 import sys
@@ -23,9 +24,6 @@ def load_libpcap():
 class PCAP(Structure):
     pass
 
-class PCAPIf(Structure):
-    pass
-
 class PcapFileHeader(Structure):
     _fields_ = [
         ('magic', c_uint),
@@ -38,7 +36,10 @@ class PcapFileHeader(Structure):
     ]
 
 class TimeVal(Structure):
-    pass
+    _fields_ = [
+        ('tv_sec', c_uint),
+        ('tv_usec', c_uint),
+    ]
 
 class PcapPkthd(Structure):
     _fields_ = [
@@ -99,6 +100,33 @@ PcapIf._fields_ = [
     ('pcap_add', POINTER(Addresses)),
     ('flags',    c_uint),
 ]
+
+
+class BaseHandler:
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def handle(self):
+        pass
+
+def c_handle(func):
+    HANDLE_FUN = CFUNCTYPE(c_char_p, POINTER(PcapPkthd), c_char_p)
+    return HANDLE_FUN(func)
+
+class GenericHandler(BaseHandler):
+
+    def _handle(self):
+        args    = args_p.value
+        pkt_hdr = pkt_hdr_p.value
+        pkt     = pkt_p.value
+        print args, pkt_hdr, pkt
+
+    @c_handle
+    def handle(self, args_p, pkt_hdr_p, pkt_p):
+        args    = args_p.value
+        pkt_hdr = pkt_hdr_p.value
+        pkt     = pkt_p.value
+        print args, pkt_hdr, pkt
 
 
 #class PcapAddr(Structure):
