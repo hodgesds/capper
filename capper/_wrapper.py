@@ -260,3 +260,36 @@ class Pcap(object):
             ebuff
         )
         return devs
+
+    def free_devices(self):
+        devs  = self.devices
+        ebuff =  c_char_p('')
+        self.libpcap.pcap_freealldevs(
+            devs,
+            ebuff,
+        )
+        if ebuff.value:
+            raise PcapExecption(ebuff.value)
+
+    def set_nonblock(self, pcap, nb):
+        nb_c  = c_int(nb)
+        ebuff =  c_char_p('')
+        res   = self.libpcap.pcap_setnonblock(
+            pcap,
+            nb_c,
+            ebuff
+        )
+        if res == -1:
+            raise PcapExecption(ebuff.value)
+        return res
+
+    def get_nonblock(self, pcap):
+        ebuff =  c_char_p('')
+        res   = self.libpcap.pcap_getnonblock(
+            pcap,
+            ebuff
+        )
+        if res == -1:
+            raise PcapExecption(ebuff.value)
+        return res
+

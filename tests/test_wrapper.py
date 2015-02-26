@@ -20,25 +20,20 @@ class TestPcap(unittest.TestCase):
     def test_create(self):
         ok_(self.pcap.create('test'))
 
-    @raises(PcapExecption)
-    def test_open_uninitialized(self):
-        ok_(self.pcap.open(
-            'foo',
-            1,
-            True,
-            100
-        ))
-
-    @raises(PcapExecption)
-    def test_lookup_net_unconfigured(self):
-        ok_(self.pcap.lookup_net(
-            'foo',
-            1,
-            1
-        ))
-
     def test_devices(self):
         ok_(self.pcap.devices)
+
+    def test_free_devices(self):
+        self.pcap.devices
+        self.pcap.free_devices()
+
+    def test_get_nonblock(self):
+        dev = self.pcap.create(self.pcap.device)
+        ok_(-1 != self.pcap.get_nonblock(dev) )
+
+    def test_set_nonblock(self):
+        dev = self.pcap.create(self.pcap.device)
+        ok_(-1 != self.pcap.set_nonblock(dev, 0) )
 
     def tearDown(self):
         pass
