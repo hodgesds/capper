@@ -11,7 +11,8 @@ from _libpcap import (
     PcapIf
 )
 
-c_int_p = POINTER(c_int)
+c_int_p   = POINTER(c_int)
+c_ubyte_p = POINTER(c_byte)
 pf = platform()
 
 class PcapExecption(Exception):
@@ -299,10 +300,10 @@ class Pcap(object):
 
     def inject(self, pcap, pkt):
         pkt_c     = c_char_p(pkt)
-        pkt_len_c = len(pkt)
+        pkt_len_c = c_int(len(pkt))
         res = self.libpcap.pcap_inject(
             pcap,
-            pkt_c,
+            cast(pkt_c, c_void_p),
             pkt_len_c
         )
         if res != 0:
@@ -310,7 +311,7 @@ class Pcap(object):
 
     def sendpacket(self, pcap, pkt):
         pkt_c     = c_char_p(pkt)
-        pkt_len_c = len(pkt)
+        pkt_len_c = c_int(len(pkt))
         self.libpcap.pcap_sendpacket(
             pcap,
             pkt_c,
@@ -345,3 +346,6 @@ class Pcap(object):
 
     def free_stamp(self, stamp):
         self.libpcap.pcap_free_tstamp_types(c_int_p)
+
+    def datalink(self, pcap):
+        return self.libpcap.pcap_datalink(pcap)
