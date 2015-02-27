@@ -59,6 +59,18 @@ class TestPcap(unittest.TestCase):
         dev = self.pcap.create(self.pcap.device)
         ok_(self.pcap.stamp_types(dev))
 
+    def test_stamp_name(self):
+        dev = self.pcap.create(self.pcap.device)
+        stamps = self.pcap.stamp_types(dev)
+        stamp  = stamps.object.value
+        ok_(self.pcap.stamp_name(stamp))
+
+    def test_stamp_desc(self):
+        dev = self.pcap.create(self.pcap.device)
+        stamps = self.pcap.stamp_types(dev)
+        stamp  = stamps.object.value
+        ok_(self.pcap.stamp_desc(stamp))
+
     def tearDown(self):
         pass
 

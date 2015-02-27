@@ -23,9 +23,6 @@ def setup_pcap():
     libpcap.pcap_lookupdev.argtypes = [c_char_p]
     libpcap.pcap_lookupdev.restype  = c_char_p
 
-    libpcap.pcap_free_tstamp_types.argtypes = [POINTER(c_int)]
-    libpcap.pcap_free_tstamp_types.restype  = None
-
     libpcap.pcap_list_tstamp_types.argtypes = [
         POINTER(PCAP),
         POINTER(c_int_p),
@@ -134,7 +131,7 @@ def setup_pcap():
     libpcap.pcap_list_tstamp_types.argtypes = [POINTER(PCAP), POINTER(POINTER(c_int))]
     libpcap.pcap_list_tstamp_types.restype  = c_int
 
-    libpcap.pcap_free_tstamp_types.argtypes = [POINTER(PCAP), POINTER(POINTER(c_int))]
+    libpcap.pcap_free_tstamp_types.argtypes = [POINTER(c_int)]
     libpcap.pcap_free_tstamp_types.restype  = None
 
     libpcap.pcap_tstamp_type_val_to_name.argtypes = [c_int]
@@ -328,6 +325,23 @@ class Pcap(object):
         )
         # could we get any stamp types?
         if res == 0:
-            clib.free(int_c_p)
+            self.libpcap.pcap_free_tstamp_types(c_int_p)
             return None
         return int_c_p
+
+    def stamp_name(self, stamp):
+        name = self.libpcap.pcap_tstamp_type_val_to_name(stamp)
+        if not name:
+            raise PcapExecption('Stamp name {0} name not found'.format(stamp))
+        return name.value
+
+    def stamp_desc(self, stamp):
+        desc = self.libpcap.pcap_tstamp_type_val_to_description(stamp)
+        if not desc:
+            raise PcapExecption(
+                'Stamp description {0} name not found'.format(stamp)
+            )
+        return name.value
+
+    def free_stamp(self, stamp):
+        self.libpcap.pcap_free_tstamp_types(c_int_p)
