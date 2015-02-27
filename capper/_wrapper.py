@@ -11,6 +11,7 @@ from _libpcap import (
     PcapIf
 )
 
+c_int_p = POINTER(c_int)
 pf = platform()
 
 class PcapExecption(Exception):
@@ -24,6 +25,12 @@ def setup_pcap():
 
     libpcap.pcap_free_tstamp_types.argtypes = [POINTER(c_int)]
     libpcap.pcap_free_tstamp_types.restype  = None
+
+    libpcap.pcap_list_tstamp_types.argtypes = [
+        POINTER(PCAP),
+        POINTER(c_int_p),
+    ]
+    libpcap.pcap_list_tstamp_types.restype  = c_int
 
     libpcap.pcap_lookupnet.argtypes = [
         c_char_p,
@@ -293,3 +300,34 @@ class Pcap(object):
             raise PcapExecption(ebuff.value)
         return res
 
+    def inject(self, pcap, pkt):
+        pkt_c     = c_char_p(pkt)
+        pkt_len_c = len(pkt)
+        res = self.libpcap.pcap_inject(
+            pcap,
+            pkt_c,
+            pkt_len_c
+        )
+        if res != 0:
+            raise PcapExecption("Failed to write packet {0}".format(pkt))
+
+    def sendpacket(self, pcap, pkt):
+        pkt_c     = c_char_p(pkt)
+        pkt_len_c = len(pkt)
+        self.libpcap.pcap_sendpacket(
+            pcap,
+            pkt_c,
+            pkt_len_c
+        )
+
+    def stamp_types(self, pcap):
+        int_c_p = POINTER(c_int)()
+        res = self.libpcap.pcap_list_tstamp_types(
+            pcap,
+            byref(int_c_p)
+        )
+        # could we get any stamp types?
+        if res == 0:
+            clib.free(int_c_p)
+            return None
+        return int_c_p

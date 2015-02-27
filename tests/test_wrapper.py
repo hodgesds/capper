@@ -35,6 +35,30 @@ class TestPcap(unittest.TestCase):
         dev = self.pcap.create(self.pcap.device)
         ok_(-1 != self.pcap.set_nonblock(dev, 0) )
 
+    def test_inject(self):
+        dev = self.pcap.create(self.pcap.device)
+        eq_(
+            0,
+            self.pcap.inject(
+                dev,
+                b'bytesofapacket',
+            )
+        )
+
+    def test_sendpacket(self):
+        dev = self.pcap.create(self.pcap.device)
+        eq_(
+            0,
+            self.pcap.sendpacket(
+                dev,
+                b'bytesofapacket',
+            )
+        )
+
+    def test_stamp_types(self):
+        dev = self.pcap.create(self.pcap.device)
+        ok_(self.pcap.stamp_types(dev))
+
     def tearDown(self):
         pass
 
