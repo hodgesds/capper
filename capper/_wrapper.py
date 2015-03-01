@@ -349,3 +349,6 @@ class Pcap(object):
 
     def datalink(self, pcap):
         return self.libpcap.pcap_datalink(pcap)
+
+    def can_set_rfmon(self, pcap):
+        return self.libpcap.pcap_can_set_rfmon(pcap)

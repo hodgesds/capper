@@ -82,6 +82,10 @@ class TestPcap(unittest.TestCase):
         act_dev = self.pcap.activate(dev)
         ok_(self.pcap.datalink(dev))
 
+    def test_can_set_rfmon(self):
+        dev = self.pcap.create(self.pcap.device)
+        ok_(self.pcap.can_set_rfmon(dev))
+
     def tearDown(self):
         pass
 
