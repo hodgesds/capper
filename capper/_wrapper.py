@@ -165,6 +165,38 @@ def setup_pcap():
     libpcap.pcap_dispatch.argtypes = [POINTER(PCAP), c_int, c_void_p ,c_char_p]
     libpcap.pcap_dispatch.restype  = c_int
 
+    libpcap.pcap_open_dead.argtypes = [c_int, c_int]
+    libpcap.pcap_open_dead.restype = PCAP
+
+    libpcap.pcap_open_dead_with_tstamp_precision.argtypes = [
+        c_int,
+        c_int,
+        c_uint
+    ]
+    libpcap.pcap_open_dead_with_tstamp_precision.restype  = PCAP
+
+    # XXX: setup bpf_program struct
+    # libpcap.pcap_setfilter.argtypes = [POINTER(PCAP),
+
+    # libpcap.pcap_setfilter.restype  = c_int
+
+    # XXX
+    #libpcap.pcap_compile.argtypes = [
+        #POINTER(PCAP),
+        #POINTER(BPF),
+        #c_char_p,
+        #c_int,
+        #c_int,
+    #]
+    #libpcap.pcap_compile.restype  =c_int
+
+    #libpcap.pcap_offline_filter.argtypes = [
+        #POINTER(BPF),
+        #POINTER(PcapPkthd),
+        #POINTER(Packet)
+    #]
+    #libpcap.pcap_offline_filter.restype  = c_int
+
     return libpcap
 
 
