@@ -283,6 +283,7 @@ PcapIf._fields_ = [
 ]
 
 
+
 class BaseHandler:
     __metaclass__ = abc.ABCMeta
 
@@ -290,9 +291,13 @@ class BaseHandler:
     def handle(self):
         pass
 
+# XXX fix inner wrapper
 def c_handle(func):
-    HANDLE_FUN = CFUNCTYPE(c_char_p, POINTER(PcapPkthd), c_char_p)
-    return HANDLE_FUN(func)
+    def wrapper(*args, **kwargs):
+        HANDLE_FUN = CFUNCTYPE(c_char_p, POINTER(PcapPkthd), c_char_p)
+        handled_fun = HANDLE_FUN(func)
+        return handled_fun(*args, **kwargs)
+    return wrapper
 
 class GenericHandler(BaseHandler):
 
@@ -308,17 +313,5 @@ class GenericHandler(BaseHandler):
         pkt_hdr = pkt_hdr_p.value
         pkt     = pkt_p.value
         print args, pkt_hdr, pkt
-
-
-#class PcapAddr(Structure):
-    #pass
-
-#PcapAddr._fields_ = [
-    #('next',      POINTER(PcapAddr)),
-    #('addr',      POINTER(sockaddr)),
-    #('netmask',   POINTER(sockaddr)),
-    #('broadaddr', POINTER(sockaddr)),
-    #('dstaddr',   POINTER(sockaddr)),
-#]
 
 
