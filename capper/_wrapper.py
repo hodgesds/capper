@@ -68,7 +68,7 @@ class Pcap(object):
             raise PcapExecption(ebuff.value)
         self.handle = h
 
-    def create(self, dev):
+    def create(self, dev="any"):
         dev_p = c_char_p(dev)
         ebuff = c_char_p('')
         pcap  = self.libpcap.pcap_create(
@@ -93,7 +93,7 @@ class Pcap(object):
             pcap,
             header
         )
-        return pkt
+        return pkt, header
 
     @property
     def version(self):
@@ -105,7 +105,7 @@ class Pcap(object):
     def loop(self, pcap, count, cb, user):
         c_count = c_int(count)
         c_user  = c_char_p(user)
-        ret = self.libpcap.pcap_loop(pcap, c_count, cb, c_user)
+        ret     = self.libpcap.pcap_loop(pcap, c_count, cb, c_user)
         return ret
 
     @property
@@ -152,7 +152,7 @@ class Pcap(object):
 
     def inject(self, pcap, pkt):
         pkt_c     = c_char_p(pkt)
-        pkt_len_c = c_int(len(pkt))
+        pkt_len_c = c_int(sizeof(pkt))
         res = self.libpcap.pcap_inject(
             pcap,
             cast(pkt_c, c_void_p),
@@ -163,7 +163,7 @@ class Pcap(object):
 
     def sendpacket(self, pcap, pkt):
         pkt_c     = c_char_p(pkt)
-        pkt_len_c = c_int(len(pkt))
+        pkt_len_c = c_int(sizeof(pkt))
         self.libpcap.pcap_sendpacket(
             pcap,
             pkt_c,
@@ -171,16 +171,16 @@ class Pcap(object):
         )
 
     def stamp_types(self, pcap):
-        int_c_p = POINTER(c_int)()
+        icp = POINTER(c_int_p)()
         res = self.libpcap.pcap_list_tstamp_types(
             pcap,
-            byref(int_c_p)
+            icp
         )
         # could we get any stamp types?
         if res == 0:
-            self.libpcap.pcap_free_tstamp_types(c_int_p)
-            return None
-        return int_c_p
+            #self.libpcap.pcap_free_tstamp_types(icp)
+            return icp
+        return icp
 
     def stamp_name(self, stamp):
         name = self.libpcap.pcap_tstamp_type_val_to_name(stamp)
@@ -204,3 +204,5 @@ class Pcap(object):
 
     def can_set_rfmon(self, pcap):
         return self.libpcap.pcap_can_set_rfmon(pcap)
+
+

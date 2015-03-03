@@ -1,6 +1,7 @@
 import unittest
 from ctypes import *
 from nose.tools import ok_, eq_, raises
+from capper._libpcap import PcapPkthd, GenericHandler
 from capper._wrapper import (
     Pcap,
     PcapExecption,
@@ -59,19 +60,16 @@ class TestPcap(unittest.TestCase):
         )
 
     def test_stamp_types(self):
-        return
         dev = self.pcap.create(self.pcap.device)
         ok_(self.pcap.stamp_types(dev))
 
     def test_stamp_name(self):
-        return
         dev = self.pcap.create(self.pcap.device)
         stamps = self.pcap.stamp_types(dev)
         stamp  = stamps.object.value
         ok_(self.pcap.stamp_name(stamp))
 
     def test_stamp_desc(self):
-        return
         dev = self.pcap.create(self.pcap.device)
         stamps = self.pcap.stamp_types(dev)
         stamp  = stamps.object.value
@@ -86,6 +84,24 @@ class TestPcap(unittest.TestCase):
         dev = self.pcap.create(self.pcap.device)
         ok_(self.pcap.can_set_rfmon(dev))
 
+    def test_loop(self):
+        # create the device
+        dev = self.pcap.create(self.pcap.device)
+        # setup callback
+        def cb(args, pkthdr, pkt):
+            print args, pkthdr, pkt
+            return None
+
+        CBFUN = CFUNCTYPE(c_char_p, PcapPkthd, c_char_p)
+        cb_fun = CBFUN(cb)
+        #l  = self.pcap.loop(dev, 1, PcapPkthd(), None)
+        l  = self.pcap.loop(dev, 1, cb_fun, None)
+        ok_(l >= 0)
+
+    def test_next_packet(self):
+        dev = self.pcap.create(self.pcap.device)
+        ret, pkt = self.pcap.next_packet(dev)
+        ok_(pkt)
+
     def tearDown(self):
         pass
-
