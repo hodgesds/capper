@@ -15,6 +15,10 @@ c_ushort_p = POINTER(c_ushort)
 
 
 def load_libpcap():
+    # XXX: refactor this for cross platform
+    if 'LIBPCAP_LIB' in os.environ:
+        return CDLL(os.environ.get('LIBPCAP_LIB'))
+
     pcap = 'libpcap.so'
     if 'darwin' in pf.lower():
         pcap = 'libpcap.1.8.0-PRE-GIT.dylib'
