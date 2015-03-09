@@ -4,9 +4,9 @@ import platform
 import os
 import sys
 import struct
-arch = 8 * struct.calcsize("P")
 
-pf = platform.platform()
+arch = 8 * struct.calcsize("P")
+pf   = platform.platform()
 
 c_int_p    = POINTER(c_int)
 c_uint_p   = POINTER(c_uint)

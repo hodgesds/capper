@@ -1,8 +1,7 @@
-from ctypes import *
 import ctypes.util
-from platform import platform
-clib = cdll.LoadLibrary(ctypes.util.find_library("c"))
-from _libpcap import (
+from   ctypes import *
+from   platform import platform
+from   _libpcap import (
     load_libpcap,
     PcapPkthd,
     TimeVal,
@@ -12,9 +11,11 @@ from _libpcap import (
     setup_libpcap,
 )
 
+clib      = cdll.LoadLibrary(ctypes.util.find_library("c"))
 c_int_p   = POINTER(c_int)
 c_ubyte_p = POINTER(c_byte)
-pf = platform()
+pf        = platform()
+
 
 class PcapExecption(Exception):
     pass
@@ -86,6 +87,12 @@ class Pcap(object):
     def activate(self, pcap):
         res = self.libpcap.pcap_activate(pcap)
         return res
+
+    def set_snaplen(self, pcap, snaplen):
+        snap_c = c_int(snaplen)
+        res    = self.libpcap.pcap_set_snaplen(pcap, snap_c)
+        if res !=0 :
+            raise PcapExecption("{0} ACTIVATED".format(pcap))
 
     def next_packet(self, pcap):
         header = PcapPkthd()
@@ -204,5 +211,4 @@ class Pcap(object):
 
     def can_set_rfmon(self, pcap):
         return self.libpcap.pcap_can_set_rfmon(pcap)
-
 
