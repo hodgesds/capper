@@ -126,5 +126,17 @@ class TestPcap(unittest.TestCase):
         snap_get = self.pcap.get_snaplen(dev)
         eq_(snap_len, snap_get)
 
+    def test_set_timeout(self):
+        dev      = self.pcap.create(self.pcap.device)
+        to_set   = self.pcap.set_timeout(dev, 100)
+        eq_(0, to_set)
+        self.pcap.activate(dev)
+        self.assertRaises(
+            PcapExecption,
+            self.pcap.set_timeout,
+            dev,
+            10
+        )
+
     def tearDown(self):
         pass

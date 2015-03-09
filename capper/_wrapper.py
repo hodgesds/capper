@@ -17,12 +17,8 @@ c_ubyte_p = POINTER(c_byte)
 pf        = platform()
 
 
-class PcapExecption(Exception):
+class PcapException(Exception):
     pass
-
-
-def create_pcap():
-    libpcap = setup_libpcap()
 
 
 class Pcap(object):
@@ -93,10 +89,18 @@ class Pcap(object):
         res    = self.libpcap.pcap_set_snaplen(pcap, snap_c)
         if res !=0 :
             raise PcapExecption("{0} ACTIVATED".format(pcap))
+        return res
 
     def get_snaplen(self, pcap):
         snaplen = self.libpcap.pcap_snapshot(pcap)
         return snaplen
+
+    def set_timeout(self, pcap, to):
+        to_c = c_int(to)
+        to   = self.libpcap.pcap_set_timeout(pcap, to_c)
+        if to != 0:
+            raise PcapExecption("{0} ACTIVATED".format(pcap))
+        return to
 
     def next_packet(self, pcap):
         header = PcapPkthd()
@@ -128,6 +132,9 @@ class Pcap(object):
             ebuff
         )
         return devs
+
+    def get_error(self, pcap):
+        return self.libpcap.pcap_geterr(pcap)
 
     def free_devices(self):
         devs  = self.devices
@@ -202,7 +209,7 @@ class Pcap(object):
     def stamp_desc(self, stamp):
         desc = self.libpcap.pcap_tstamp_type_val_to_description(stamp)
         if not desc:
-            raise PcapExecption(
+            raise PcapException(
                 'Stamp description {0} name not found'.format(stamp)
             )
         return name.value
@@ -214,5 +221,22 @@ class Pcap(object):
         return self.libpcap.pcap_datalink(pcap)
 
     def can_set_rfmon(self, pcap):
-        return self.libpcap.pcap_can_set_rfmon(pcap)
+        rfmon = self.libpcap.pcap_can_set_rfmon(pcap)
+        if rfmon == 0:
+            err = self.libpcap.pcap_geterr(pcap)
+            print err
+        return rfmon
 
+    def set_rfmon(self, pcap, mon):
+        mon_c = c_int(mon)
+        res = self.libpcap.pcap_set_rfmon(pcap, mon_c)
+        return res
+
+    def get_fd(self, pcap):
+        fd = self.libpcap.pcap_get_selectable_fd(pcap)
+        return fd
+
+    def set_buff_size(self, pcap, buff_len):
+        c_buff = c_int(buff_len)
+        buff = self.libpcap.pcap_set_buffer_size(pcap, c_buff)
+        return buff

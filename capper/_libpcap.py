@@ -51,6 +51,9 @@ def setup_libpcap():
     libpcap.pcap_strerror.argtypes = [c_int]
     libpcap.pcap_strerror.restype  = c_char
 
+    libpcap.pcap_geterr.argtypes = [POINTER(PCAP)]
+    libpcap.pcap_geterr.restype  = c_char
+
     libpcap.pcap_next.argtypes = [POINTER(PCAP), POINTER(PcapPkthd)]
     libpcap.pcap_next.restype  = c_char
 
