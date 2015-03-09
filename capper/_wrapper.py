@@ -94,6 +94,10 @@ class Pcap(object):
         if res !=0 :
             raise PcapExecption("{0} ACTIVATED".format(pcap))
 
+    def get_snaplen(self, pcap):
+        snaplen = self.libpcap.pcap_snapshot(pcap)
+        return snaplen
+
     def next_packet(self, pcap):
         header = PcapPkthd()
         pkt    = self.libpcap.pcap_next(

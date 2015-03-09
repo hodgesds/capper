@@ -119,5 +119,12 @@ class TestPcap(unittest.TestCase):
             10
         )
 
+    def test_get_snaplen(self):
+        dev      = self.pcap.create(self.pcap.device)
+        snap_set = self.pcap.set_snaplen(dev, 10)
+        self.pcap.activate(dev)
+        snap_get = self.pcap.get_snaplen(dev)
+        eq_(snap_len, snap_get)
+
     def tearDown(self):
         pass
