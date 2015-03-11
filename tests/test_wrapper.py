@@ -4,7 +4,7 @@ from nose.tools import ok_, eq_, raises
 from capper._libpcap import PcapPkthd, GenericHandler
 from capper._wrapper import (
     Pcap,
-    PcapExecption,
+    PcapException,
 )
 
 
@@ -28,6 +28,10 @@ class TestPcap(unittest.TestCase):
     def test_free_devices(self):
         self.pcap.devices
         self.pcap.free_devices()
+
+    def test_open_dead(self):
+        dev =self.pcap.dead(1, 1024)
+        ok_(dev)
 
     def test_get_nonblock(self):
         dev = self.pcap.create(self.pcap.device)
@@ -113,7 +117,7 @@ class TestPcap(unittest.TestCase):
         # try setting it on active, raises error
         self.pcap.activate(dev)
         self.assertRaises(
-            PcapExecption,
+            PcapException,
             self.pcap.set_snaplen,
             dev,
             10
@@ -132,7 +136,7 @@ class TestPcap(unittest.TestCase):
         eq_(0, to_set)
         self.pcap.activate(dev)
         self.assertRaises(
-            PcapExecption,
+            PcapException,
             self.pcap.set_timeout,
             dev,
             10

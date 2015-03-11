@@ -30,7 +30,7 @@ class Pcap(object):
         ebuff = c_char_p('')
         dev   = self.libpcap.pcap_lookupdev(ebuff)
         if not dev:
-            raise PcapExecption(ebuff)
+            raise PcapException(ebuff)
         return dev
 
     def lookup_net(self, dev, net, mask):
@@ -45,7 +45,7 @@ class Pcap(object):
             ebuff
         )
         if res == -1:
-            raise PcapExecption(ebuff.value)
+            raise PcapException(ebuff.value)
         return res
 
     def open(self, dev, snaplen, promisc, to_ms):
@@ -62,7 +62,7 @@ class Pcap(object):
             ebuff
         )
         if not h:
-            raise PcapExecption(ebuff.value)
+            raise PcapException(ebuff.value)
         self.handle = h
 
     def create(self, dev="any"):
@@ -74,7 +74,7 @@ class Pcap(object):
         )
         if ebuff.value:
             print ebuff.value
-            raise PcapExecption(ebuff.value)
+            raise PcapException(ebuff.value)
         return pcap
 
     def close(self, pcap):
@@ -88,7 +88,7 @@ class Pcap(object):
         snap_c = c_int(snaplen)
         res    = self.libpcap.pcap_set_snaplen(pcap, snap_c)
         if res !=0 :
-            raise PcapExecption("{0} ACTIVATED".format(pcap))
+            raise PcapException("{0} ACTIVATED".format(pcap))
         return res
 
     def get_snaplen(self, pcap):
@@ -99,7 +99,7 @@ class Pcap(object):
         to_c = c_int(to)
         to   = self.libpcap.pcap_set_timeout(pcap, to_c)
         if to != 0:
-            raise PcapExecption("{0} ACTIVATED".format(pcap))
+            raise PcapException("{0} ACTIVATED".format(pcap))
         return to
 
     def next_packet(self, pcap):
@@ -144,28 +144,28 @@ class Pcap(object):
             ebuff,
         )
         if ebuff.value:
-            raise PcapExecption(ebuff.value)
+            raise PcapException(ebuff.value)
 
     def set_nonblock(self, pcap, nb):
         nb_c  = c_int(nb)
-        ebuff =  c_char_p('')
+        ebuff =  c_char_p(' '*256)
         res   = self.libpcap.pcap_setnonblock(
             pcap,
             nb_c,
             ebuff
         )
         if res == -1:
-            raise PcapExecption(ebuff.value)
+            raise PcapException(ebuff.value)
         return res
 
     def get_nonblock(self, pcap):
-        ebuff =  c_char_p('')
+        ebuff =  c_char_p(' '*256)
         res   = self.libpcap.pcap_getnonblock(
             pcap,
             ebuff
         )
         if res == -1:
-            raise PcapExecption(ebuff.value)
+            raise PcapException(ebuff.value)
         return res
 
     def inject(self, pcap, pkt):
@@ -177,7 +177,7 @@ class Pcap(object):
             pkt_len_c
         )
         if res != 0:
-            raise PcapExecption("Failed to write packet {0}".format(pkt))
+            raise PcapException("Failed to write packet {0}".format(pkt))
 
     def sendpacket(self, pcap, pkt):
         pkt_c     = c_char_p(pkt)
@@ -203,7 +203,7 @@ class Pcap(object):
     def stamp_name(self, stamp):
         name = self.libpcap.pcap_tstamp_type_val_to_name(stamp)
         if not name:
-            raise PcapExecption('Stamp name {0} name not found'.format(stamp))
+            raise PcapException('Stamp name {0} name not found'.format(stamp))
         return name.value
 
     def stamp_desc(self, stamp):
@@ -235,6 +235,12 @@ class Pcap(object):
     def get_fd(self, pcap):
         fd = self.libpcap.pcap_get_selectable_fd(pcap)
         return fd
+
+    def dead(self, link, snaplen):
+        link_c = c_int(link)
+        snap_c = c_int(snaplen)
+        dev   = self.libpcap.pcap_open_dead(link_c, snap_c)
+        return dev
 
     def set_buff_size(self, pcap, buff_len):
         c_buff = c_int(buff_len)

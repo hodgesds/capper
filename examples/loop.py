@@ -20,7 +20,7 @@ def main():
     else:
         mon  = pcap.set_rfmon(dev, 1)
         print 'rf mon:', mon
-    to   = pcap.set_timeout(dev, 1000)
+    to   = pcap.set_timeout(dev, 10000)
     print 'timeout', to
     buff = pcap.set_buff_size(dev, 2048)
     print 'buff size:', buff
