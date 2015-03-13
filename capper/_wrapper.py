@@ -102,6 +102,13 @@ class Pcap(object):
             raise PcapException("{0} ACTIVATED".format(pcap))
         return to
 
+    def set_promisc(self, pcap, prom):
+        prom_int_c = c_int(prom)
+        err        = self.libpcap.pcap_set_promisc(pcap, prom_int_c)
+        if err != 0:
+            print self.get_error(pcap)
+        return err
+
     def next_packet(self, pcap):
         header = PcapPkthd()
         pkt    = self.libpcap.pcap_next(
