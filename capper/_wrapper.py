@@ -253,3 +253,6 @@ class Pcap(object):
         c_buff = c_int(buff_len)
         buff = self.libpcap.pcap_set_buffer_size(pcap, c_buff)
         return buff
+
+    def is_swapped(self, pcap):
+        return self.libpcap.pcap_is_swapped(pcap)

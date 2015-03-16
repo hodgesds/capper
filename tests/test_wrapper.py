@@ -142,5 +142,9 @@ class TestPcap(unittest.TestCase):
             10
         )
 
+    def test_is_swapped(self):
+        dev = self.pcap.create(self.pcap.device)
+        ok_(self.pcap.is_swapped(dev))
+
     def tearDown(self):
         pass
