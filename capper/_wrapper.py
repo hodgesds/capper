@@ -110,7 +110,7 @@ class Pcap(object):
         return err
 
     def next_packet(self, pcap):
-        header = PcapPkthd()
+        header = byref(PcapPkthd())
         pkt    = self.libpcap.pcap_next(
             pcap,
             header
@@ -253,6 +253,11 @@ class Pcap(object):
         c_buff = c_int(buff_len)
         buff = self.libpcap.pcap_set_buffer_size(pcap, c_buff)
         return buff
+
+    def stats(self, pcap):
+        stats = PcapStat()
+        ret = self.libpcap.pcap_stats(pcap, stats)
+        return ret, stats
 
     def is_swapped(self, pcap):
         return self.libpcap.pcap_is_swapped(pcap)

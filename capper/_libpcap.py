@@ -79,7 +79,7 @@ def setup_libpcap():
     libpcap.pcap_loop.argtypes = [
         POINTER(PCAP),
         c_int,
-        POINTER(PcapPkthd),
+        HANDLE_FUN,
         c_char_p
     ]
     libpcap.pcap_loop.restype  = c_int
@@ -291,34 +291,11 @@ PcapIf._fields_ = [
 
 
 
-class BaseHandler:
-    __metaclass__ = abc.ABCMeta
 
-    @abc.abstractmethod
-    def handle(self):
-        pass
+HANDLE_FUN = CFUNCTYPE(c_char_p, POINTER(PcapPkthd), c_char_p)
 
-# XXX fix inner wrapper
-def c_handle(func):
-    def wrapper(*args, **kwargs):
-        HANDLE_FUN = CFUNCTYPE(c_char_p, POINTER(PcapPkthd), c_char_p)
-        handled_fun = HANDLE_FUN(func)
-        return handled_fun(*args, **kwargs)
-    return wrapper
+def handle_cb(a, b, c):
+    print a, b, c
+    return 0
 
-class GenericHandler(BaseHandler):
-
-    def _handle(self):
-        args    = args_p.value
-        pkt_hdr = pkt_hdr_p.value
-        pkt     = pkt_p.value
-        print args, pkt_hdr, pkt
-
-    @c_handle
-    def handle(self, args_p, pkt_hdr_p, pkt_p):
-        args    = args_p.value
-        pkt_hdr = pkt_hdr_p.value
-        pkt     = pkt_p.value
-        print args, pkt_hdr, pkt
-
-
+handled_cb = HANDLE_FUN(handle_cb)
