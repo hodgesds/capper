@@ -9,10 +9,13 @@ def pkt_handler(*args, **kwargs):
 
 def pcap_close(*args, **kwargs):
     print 'getting next packet'
-    print args[0].loop(args[1], 15, handled_cb, None)
-    args[0].activate(args[1])
     #print args[0].next_packet(args[1])
 
+
+def read_fd(fd, *args, **kwargs):
+    dev  = kwargs.get('dev')
+    pcap = kwargs.get('pcap')
+    pcap.dispatch(dev, 1, handled_cb, None)
 
 def shutdown(*args, **kwargs):
     args[0].close(args[1])
@@ -37,9 +40,9 @@ def main():
     #print 'snap:', snap
     #prom = pcap.set_promisc(dev, 1)
     #print 'prom:', prom
-    #act  = pcap.activate(dev)
-    #print 'activated:', act
-    nb   = pcap.set_nonblock(dev, 0)
+    act  = pcap.activate(dev)
+    print 'activated:', act
+    nb   = pcap.set_nonblock(dev, 1)
     print "non block", nb
     fd   = pcap.get_fd(dev)
     print 'fd:', fd
@@ -47,7 +50,8 @@ def main():
     print 'get nonblock', gnb
     ioloop = tornado.ioloop.IOLoop.instance()
     if fd > 0 and gnb > 0:
-        ioloop.add_handler(fd, pkt_handler, ioloop.READ)
+        read_partial = partial(read_fd, **{'dev':dev, 'pcap':pcap})
+        ioloop.add_handler(fd, read_partial, ioloop.READ)
     ioloop.add_timeout(ioloop.time()+1, pcap_close, *(pcap, dev))
     ioloop.add_timeout(ioloop.time()+5, shutdown, *(pcap, dev))
     ioloop.start()

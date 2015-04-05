@@ -130,6 +130,12 @@ class Pcap(object):
         ret     = self.libpcap.pcap_loop(pcap, c_count, cb, c_user)
         return ret
 
+    def dispatch(self, pcap, count, cb, user):
+        c_count = c_int(count)
+        c_user  = c_char_p(user)
+        ret     = self.libpcap.pcap_dispatch(pcap, c_count, cb, c_user)
+        return ret
+
     @property
     def devices(self):
         devs  = POINTER(PcapIf)()

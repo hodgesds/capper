@@ -294,8 +294,8 @@ PcapIf._fields_ = [
 
 HANDLE_FUN = CFUNCTYPE(c_char_p, POINTER(PcapPkthd), c_char_p)
 
-def handle_cb(a, b, c):
-    print a, b, c
+def handle_cb(a, b):
+    print a, b
     return 0
 
 handled_cb = HANDLE_FUN(handle_cb)
