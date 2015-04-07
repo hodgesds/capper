@@ -1,4 +1,5 @@
 from   ctypes import *
+from   collections import deque
 import abc
 import platform
 import os
@@ -289,13 +290,21 @@ PcapIf._fields_ = [
     ('flags',    c_uint),
 ]
 
-
-
-
 HANDLE_FUN = CFUNCTYPE(c_char_p, POINTER(PcapPkthd), c_char_p)
 
-def handle_cb(a, b):
+class CallbackHandler(object):
+    def __init__(self, *args, **kwargs):
+        self.q  = deque()
+        self.cb = HANDLE_FUN(self._cb)
+
+    def _cb(self, pkt_hdr, pkt):
+        self.q.append((pkt_hdr, pkt))
+        return 0
+
+
+def handle_cb(self, a, b):
     print a, b
     return 0
+
 
 handled_cb = HANDLE_FUN(handle_cb)

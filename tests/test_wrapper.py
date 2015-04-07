@@ -1,7 +1,7 @@
 import unittest
 from ctypes import *
 from nose.tools import ok_, eq_, raises
-from capper._libpcap import PcapPkthd, GenericHandler
+from capper._libpcap import PcapPkthd
 from capper._wrapper import (
     Pcap,
     PcapException,
