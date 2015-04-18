@@ -34,6 +34,13 @@ class Pcap(object):
         return dev
 
     def lookup_net(self, dev, net, mask):
+        """
+        find the network address and network mask for a given capture device
+        see `lookup_net<http://www.tcpdump.org/manpages/pcap_lookupnet.3pcap.html>`_
+        arg: dev: Device name
+        arg: net: bpf_u_int32 pointer
+        arg: mask: bpf_u_int32 pointer
+        """
         dev_p  = c_char_p(dev)
         net_p  = c_uint(net)
         mask_p = c_uint(mask)
@@ -66,6 +73,10 @@ class Pcap(object):
         self.handle = h
 
     def create(self, dev="any"):
+        """
+        create - create a live capture handle
+
+        """
         dev_p = c_char_p(dev)
         ebuff = c_char_p('')
         pcap  = self.libpcap.pcap_create(
